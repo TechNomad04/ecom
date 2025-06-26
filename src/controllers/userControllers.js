@@ -27,7 +27,15 @@ const createUser = asyncHandler(async (req, res) => {
         const refreshToken = user.generateRefreshAccessToken();
         user.refreshToken = refreshToken;
 
+        verifyEmail(user)
+
+        if(!isVerified)
+        return res.status(401).json({status: false, message: "Verification of email failed"})
+
+        user.isVerified = true
+
         await user.save()
+
 
         return res.status(201).json({status: true, 
                                     message: "User created successfully",
@@ -38,6 +46,7 @@ const createUser = asyncHandler(async (req, res) => {
                                         name: user.name,
                                         kind: user.kind
                                  }})
+
 });
 
 const getUser = asyncHandler(async(req, res) => {
@@ -132,8 +141,6 @@ const deleteUser = asyncHandler(async(req, res) => {
             await BaseUser.deleteOne({email})
             return res.status(200).json({status: true, message: "User deleted successfully"})
         }
-
-        await verifyEmail(user)
 });
 
 const verifyUser = asyncHandler(async (req, res) => {
